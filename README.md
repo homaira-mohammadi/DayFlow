@@ -83,10 +83,10 @@ New users get a short welcome flow with one question per screen, then a guided t
 - With period tracking on, **logged** period days are excused: the buttons are replaced by a note, the chart shades the day, and the day neither counts toward nor breaks a streak. Predicted days are not excused, since predictions can be wrong.
 - Turn it on or off in **Settings → Prayers**. Prayer records are included in data export.
 
-##  Download & Install APK
+## 📥 Download & Install APK
 
 You can download and install the pre-built app directly without building from source:
-- [📥 **Download Dayflow-1.0.0.apk (Direct Download)**](https://raw.githubusercontent.com/homaira-mohammadi/DayFlow/main/apk/Dayflow-1.0.0.apk)
+- [📥 **Download Dayflow-1.1.0.apk (Direct Download)**](https://raw.githubusercontent.com/homaira-mohammadi/DayFlow/main/apk/Dayflow-1.1.0.apk)
 - Or find it in the [`apk/`](apk/) folder and click **"View raw"**.
 
 ## Build & run
