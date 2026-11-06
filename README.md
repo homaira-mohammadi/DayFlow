@@ -38,7 +38,7 @@
 | 🩸 **Cycle** *(optional)* | Period calendar, predictions, PMS days and symptoms. On logged period days, prayers are marked as **excused** and streaks are not broken. |
 | 🔒 **Privacy** | No account and no internet permission. Optional fingerprint or PIN app lock and a JSON export. |
 
-## 📸 Gallery
+##  Gallery
 
 **Welcome & prayers**
 ![Welcome flow, app tour and prayer tracker](screenshots/overview_welcome_prayers.png)
@@ -52,7 +52,7 @@
 **Dark mode**
 ![Dayflow in dark mode](screenshots/overview_dark.png)
 
-## 👋 First run
+##  First run
 
 New users get a short welcome flow with one question per screen, then a guided tour of the app.
 
@@ -69,7 +69,7 @@ New users get a short welcome flow with one question per screen, then a guided t
 - **Prayer tracker** is offered after answering *Yes* to "Are you Muslim?". That answer is only used to show the option and is **never saved**; only the on/off switch is stored.
 - The **app tour** only shows pages for features that are turned on, and can be replayed from **Settings → App tour**.
 
-## 🕌 Prayers
+##  Prayers
 
 <p align="center">
   <img src="screenshots/today_prayers.png" width="220" alt="Prayers card" />
@@ -83,12 +83,12 @@ New users get a short welcome flow with one question per screen, then a guided t
 - With period tracking on, **logged** period days are excused: the buttons are replaced by a note, the chart shades the day, and the day neither counts toward nor breaks a streak. Predicted days are not excused, since predictions can be wrong.
 - Turn it on or off in **Settings → Prayers**. Prayer records are included in data export.
 
-## 📥 Download & Install APK
+##  Download & Install APK
 
 You can download and install the pre-built app directly without building from source:
 - Find the installable APK in the [`apk/`](apk/) folder: [`apk/Dayflow-1.0.0.apk`](apk/Dayflow-1.0.0.apk).
 
-## 🚀 Build & run
+## Build & run
 
 1. Open this folder in **Android Studio** (Ladybug or newer).
 2. Let Gradle sync, then run the `app` configuration on a phone or emulator (Android 8.0+).
@@ -106,7 +106,7 @@ Or build an installable APK:
 
 The APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
 
-## 🧱 Tech stack
+## Tech stack
 
 - **Kotlin** and **Jetpack Compose** (Material 3), with edge-to-edge UI, dynamic color and a dark theme
 - **Room** with versioned migrations (current schema version 6), plus **DataStore** for settings
@@ -114,7 +114,7 @@ The APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
 - **androidx.biometric** for the optional app lock
 - No third-party analytics, no network access
 
-## 🗂️ Code map
+## Code map
 
 - `domain/`: pure rules for scheduling, streaks, completion %, minimum versions, cycle predictions and prayer streaks. All unit-tested.
 - `data/db`: Room entities, DAOs and migrations. Habit schedules are *versioned*, so editing a habit never rewrites past days.
@@ -122,7 +122,7 @@ The APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
 - `notifications/`: reminders and boot handling.
 - `ui/`: Compose screens and ViewModels (`onboarding/`, `today/`, `prayer/`, `habits/`, `calendar/`, `focus/`, `progress/`, `cycle/`, `settings/`).
 
-## 🔐 Privacy & security
+## Privacy & security
 
 - **No internet permission.** Data only leaves the phone through an export you start, or a direct phone-to-phone transfer.
 - **Backups:** personal records (database, photos, settings, timer state) are excluded from Google cloud backup and only included in device-to-device transfers (`res/xml/data_extraction_rules.xml`, `backup_rules.xml`).
