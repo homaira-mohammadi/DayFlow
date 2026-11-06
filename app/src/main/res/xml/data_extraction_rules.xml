@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 12+. Personal records (journal, period data, photos) never go to Google cloud backup;
+  they only move when setting up a new phone with a direct device-to-device transfer.
+-->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="database" path="dayflow.db" />
+        <exclude domain="database" path="dayflow.db-wal" />
+        <exclude domain="database" path="dayflow.db-shm" />
+        <exclude domain="file" path="datastore/settings.preferences_pb" />
+        <exclude domain="file" path="reflection_photos" />
+        <exclude domain="sharedpref" path="focus_timer.xml" />
+    </cloud-backup>
+    <device-transfer>
+        <include domain="database" path="dayflow.db" />
+        <include domain="database" path="dayflow.db-wal" />
+        <include domain="database" path="dayflow.db-shm" />
+        <include domain="file" path="datastore/settings.preferences_pb" />
+        <include domain="file" path="reflection_photos" />
+        <include domain="sharedpref" path="focus_timer.xml" />
+    </device-transfer>
+</data-extraction-rules>

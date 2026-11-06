@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Android 11 and lower. Each file is only included for direct device-to-device transfers, so
+  personal records are not uploaded to Google cloud backup.
+-->
+<full-backup-content>
+    <include domain="database" path="dayflow.db" requireFlags="deviceToDeviceTransfer" />
+    <include domain="database" path="dayflow.db-wal" requireFlags="deviceToDeviceTransfer" />
+    <include domain="database" path="dayflow.db-shm" requireFlags="deviceToDeviceTransfer" />
+    <include domain="file" path="datastore/settings.preferences_pb" requireFlags="deviceToDeviceTransfer" />
+    <include domain="file" path="reflection_photos" requireFlags="deviceToDeviceTransfer" />
+    <include domain="sharedpref" path="focus_timer.xml" requireFlags="deviceToDeviceTransfer" />
+</full-backup-content>

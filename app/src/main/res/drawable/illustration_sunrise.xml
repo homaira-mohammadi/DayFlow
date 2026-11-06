@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Morning reflection header: a smiling sun rising over hills. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="360dp"
+    android:height="180dp"
+    android:viewportWidth="360"
+    android:viewportHeight="180">
+    <path android:pathData="M0,0h360v180h-360z">
+        <aapt:attr name="android:fillColor">
+            <gradient android:type="linear" android:startX="0" android:startY="0" android:endX="0" android:endY="180"
+                android:startColor="#FFFFF3D6" android:endColor="#FFFFC768" />
+        </aapt:attr>
+    </path>
+    <path android:pathData="M180,22 L180,36 M232,40 L224,51 M128,40 L136,51 M258,84 L245,87 M102,84 L115,87"
+        android:strokeColor="#FFFFB43A" android:strokeWidth="4" android:strokeLineCap="round" />
+    <path android:pathData="M180,60 a40,40 0 1,0 0.01,0z" android:fillColor="#FFFFB43A" />
+    <path android:pathData="M168,94 a4,4 0 1,0 0.01,0z M192,94 a4,4 0 1,0 0.01,0z" android:fillColor="#FF7A4A1E" />
+    <path android:pathData="M170,110 q10,9 20,0" android:strokeColor="#FF7A4A1E" android:strokeWidth="3" android:strokeLineCap="round" />
+    <path android:pathData="M158,104 a5,4 0 1,0 0.01,0z M202,104 a5,4 0 1,0 0.01,0z" android:fillColor="#FFFF8A5B" android:fillAlpha="0.55" />
+    <path android:pathData="M40,52 q4,-14 18,-10 q6,-12 20,-4 q14,-2 14,12 q8,4 0,10 h-50 q-10,-2 -2,-8z" android:fillColor="#FFFFFFFF" android:fillAlpha="0.85" />
+    <path android:pathData="M268,34 q3,-10 13,-7 q5,-9 15,-3 q10,-1 10,9 q6,3 0,7 h-36 q-7,-1 -2,-6z" android:fillColor="#FFFFFFFF" android:fillAlpha="0.8" />
+    <path android:pathData="M84,74 q5,-5 10,0 q5,-5 10,0 M282,64 q4,-4 8,0 q4,-4 8,0"
+        android:strokeColor="#FF8A5A33" android:strokeWidth="2" android:strokeLineCap="round" />
+    <path android:pathData="M0,128 C60,96 120,104 180,122 C240,100 300,94 360,118 L360,180 L0,180z" android:fillColor="#FFB9D27E" />
+    <path android:pathData="M0,146 C70,120 150,126 210,146 C260,130 320,128 360,140 L360,180 L0,180z" android:fillColor="#FF7DB35F" />
+    <path android:pathData="M0,164 C90,148 200,150 360,166 L360,180 L0,180z" android:fillColor="#FF4E8D4A" />
+    <path android:pathData="M40,150 l10,-26 l10,26z M58,152 l8,-20 l8,20z M300,146 l11,-28 l11,28z M320,150 l8,-20 l8,20z" android:fillColor="#FF2F6B3F" />
+    <path android:pathData="M49,150 h2 v6 h-2z M310,146 h2 v6 h-2z" android:fillColor="#FF6B4A2B" />
+</vector>
