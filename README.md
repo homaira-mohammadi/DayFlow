@@ -86,7 +86,8 @@ New users get a short welcome flow with one question per screen, then a guided t
 ##  Download & Install APK
 
 You can download and install the pre-built app directly without building from source:
-- Find the installable APK in the [`apk/`](apk/) folder: [`apk/Dayflow-1.0.0.apk`](apk/Dayflow-1.0.0.apk).
+- [📥 **Download Dayflow-1.0.0.apk (Direct Download)**](https://raw.githubusercontent.com/homaira-mohammadi/DayFlow/main/apk/Dayflow-1.0.0.apk)
+- Or find it in the [`apk/`](apk/) folder and click **"View raw"**.
 
 ## Build & run
 
