@@ -14,6 +14,7 @@ import com.dayflow.data.db.PeriodDayEntity
 import com.dayflow.data.db.PrayerLogEntity
 import com.dayflow.data.db.ReflectionEntity
 import com.dayflow.data.db.RestDayEntity
+import com.dayflow.data.db.SleepLogEntity
 import com.dayflow.data.db.TaskEntity
 import com.dayflow.data.db.TaskRescheduleEntity
 import com.dayflow.domain.Mood
@@ -26,11 +27,12 @@ class BackupFormatException(message: String) : Exception(message)
 
 /**
  * The JSON backup file. Version 2 added task reminders, habit order and rest day notes, and
- * version 3 added goals. Older files are still read: what they lack falls back to its default.
+ * version 3 added goals and version 4 added sleep. Older files are still read: what they lack
+ * falls back to its default.
  */
 object BackupFormat {
     const val FORMAT = "dayflow-export"
-    const val VERSION = 3
+    const val VERSION = 4
 
     /** Period data is sensitive, so it is only written when [includeCycle] is explicitly requested. */
     fun toJson(data: BackupData, includeCycle: Boolean, exportedAt: Long = System.currentTimeMillis()): JSONObject {
@@ -98,6 +100,10 @@ object BackupFormat {
             }))
             .put("goalTasks", JSONArray(data.goalTasks.map { JSONObject().put("taskId", it.taskId).put("goalId", it.goalId) }))
             .put("goalHabits", JSONArray(data.goalHabits.map { JSONObject().put("habitId", it.habitId).put("goalId", it.goalId) }))
+            .put("sleepLogs", JSONArray(data.sleepLogs.map { n ->
+                JSONObject().put("date", n.date).put("bedMinutes", n.bedMinutes).put("wakeMinutes", n.wakeMinutes)
+                    .put("updatedAt", n.updatedAt)
+            }))
         if (includeCycle) {
             root.put("periodDays", JSONArray(data.periodDays.orEmpty().map { JSONObject().put("date", it.date).put("flow", it.flow.name) }))
             root.put("cycleSymptoms", JSONArray(data.cycleSymptoms.orEmpty().map {
@@ -201,6 +207,12 @@ object BackupFormat {
                 },
                 goalTasks = root.rows("goalTasks") { o -> GoalTaskEntity(taskId = o.getLong("taskId"), goalId = o.getLong("goalId")) },
                 goalHabits = root.rows("goalHabits") { o -> GoalHabitEntity(habitId = o.getLong("habitId"), goalId = o.getLong("goalId")) },
+                sleepLogs = root.rows("sleepLogs") { o ->
+                    SleepLogEntity(
+                        date = o.getLong("date"), bedMinutes = o.getInt("bedMinutes"), wakeMinutes = o.getInt("wakeMinutes"),
+                        updatedAt = o.getLong("updatedAt"),
+                    )
+                },
                 periodDays = if (!root.has("periodDays")) null else root.rows("periodDays") { o ->
                     PeriodDayEntity(date = o.getLong("date"), flow = enumValueOf(o.getString("flow")))
                 },

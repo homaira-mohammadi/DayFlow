@@ -111,7 +111,7 @@ import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
 
-private enum class SettingsDialog { NAME, ACCENT, WEEK_START, MORNING, EVENING, ABOUT, HELP, DELETE, GENDER, CYCLE_LENGTH, PERIOD_LENGTH, PMS_DAYS, EXPORT, RESTORE, DELETE_CYCLE, APP_LOCK }
+private enum class SettingsDialog { NAME, ACCENT, WEEK_START, MORNING, EVENING, ABOUT, HELP, DELETE, GENDER, CYCLE_LENGTH, PERIOD_LENGTH, PMS_DAYS, EXPORT, RESTORE, DELETE_CYCLE, APP_LOCK, SLEEP_GOAL }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -213,6 +213,17 @@ fun SettingsScreen(
                 SettingsRow(Icons.Filled.Mosque, "Prayer tracking", subtitle = "Shows Fajr, Dhuhr, Asr, Maghrib and Isha on Today, to mark as on time, late or missed", trailing = {
                     Switch(checked = s.prayerTracking, onCheckedChange = { v -> vm.update { it.copy(prayerTracking = v) } })
                 })
+            }
+
+            SettingsGroup("Sleep") {
+                SettingsRow(Icons.Filled.Bedtime, "Sleep tracker", subtitle = "Log bedtime and wake-up on Today, and see your sleep on charts", trailing = {
+                    Switch(checked = s.sleepTracking, onCheckedChange = { v -> vm.update { it.copy(sleepTracking = v) } })
+                })
+                if (s.sleepTracking) {
+                    RowDivider()
+                    SettingsRow(Icons.Filled.Bedtime, "Sleep goal", subtitle = "Hours of sleep you aim for each night",
+                        value = "${s.sleepGoalMinutes / 60} h", onClick = { dialog = SettingsDialog.SLEEP_GOAL })
+                }
             }
 
             SettingsGroup("Period tracking") {
@@ -369,7 +380,7 @@ fun SettingsScreen(
             title = { Text("Export data") },
             text = {
                 Column {
-                    Text("Saves your tasks, habits, goals, reflections and focus sessions as a JSON file. On a new phone, use Restore from backup to bring them back. Photos aren't included.")
+                    Text("Saves your tasks, habits, goals, sleep, reflections and focus sessions as a JSON file. On a new phone, use Restore from backup to bring them back. Photos aren't included.")
                     if (s.cycleTracking || exportCycle) {
                         Row(
                             Modifier.fillMaxWidth().padding(top = 12.dp).clickable { exportCycle = !exportCycle },
@@ -410,6 +421,9 @@ fun SettingsScreen(
         }
         SettingsDialog.PERIOD_LENGTH -> NumberDialog("Typical period length", s.periodLength, 1..10, "days", { dialog = null }) { n ->
             vm.update { it.copy(periodLength = n) }
+        }
+        SettingsDialog.SLEEP_GOAL -> NumberDialog("Sleep goal", s.sleepGoalMinutes / 60, 5..12, "hours", { dialog = null }) { n ->
+            vm.update { it.copy(sleepGoalMinutes = n * 60) }
         }
         SettingsDialog.PMS_DAYS -> NumberDialog("PMS days", s.pmsDays, 1..10, "days before a period", { dialog = null }) { n ->
             vm.update { it.copy(pmsDays = n) }

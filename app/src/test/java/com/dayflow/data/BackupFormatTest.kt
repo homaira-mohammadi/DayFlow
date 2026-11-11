@@ -14,6 +14,7 @@ import com.dayflow.data.db.PeriodDayEntity
 import com.dayflow.data.db.PrayerLogEntity
 import com.dayflow.data.db.ReflectionEntity
 import com.dayflow.data.db.RestDayEntity
+import com.dayflow.data.db.SleepLogEntity
 import com.dayflow.data.db.TaskEntity
 import com.dayflow.data.db.TaskRescheduleEntity
 import com.dayflow.data.repo.BackupFormat
@@ -67,6 +68,7 @@ class BackupFormatTest {
             ReflectionEntity(date = 19_704, updatedAt = 9),
         ),
         prayerLogs = listOf(PrayerLogEntity(date = 19_703, prayer = Prayer.FAJR, status = PrayerStatus.LATE, updatedAt = 3)),
+        sleepLogs = listOf(SleepLogEntity(date = 19_703, bedMinutes = 1410, wakeMinutes = 405, updatedAt = 4)),
         goals = listOf(
             GoalEntity(id = 2, title = "Improve programming skills", description = "For the new job", targetDate = 20_800, status = GoalStatus.ACHIEVED, createdAt = 11),
             GoalEntity(id = 5, title = "Get fit", createdAt = 12),
@@ -114,13 +116,14 @@ class BackupFormatTest {
         assertEquals(emptyList<PrayerLogEntity>(), parsed.prayerLogs)
     }
 
-    @Test fun `a version 2 backup from before goals is still read`() {
+    @Test fun `a version 2 backup from before goals and sleep is still read`() {
         val v2 = JSONObject(export(includeCycle = false)).apply {
             put("version", 2)
-            listOf("goals", "goalMilestones", "goalTasks", "goalHabits").forEach { remove(it) }
+            listOf("goals", "goalMilestones", "goalTasks", "goalHabits", "sleepLogs").forEach { remove(it) }
         }
         val parsed = BackupFormat.parse(v2.toString())
         assertEquals(sample.tasks, parsed.tasks)
+        assertTrue(parsed.sleepLogs.isEmpty())
         assertTrue(parsed.goals.isEmpty() && parsed.goalMilestones.isEmpty() && parsed.goalTasks.isEmpty() && parsed.goalHabits.isEmpty())
     }
 

@@ -54,6 +54,10 @@ data class UserSettings(
     val prayerTracking: Boolean = true,
     /** The first-run app tour has been seen or skipped. */
     val tourSeen: Boolean = false,
+    /** Shows the sleep card on Today. */
+    val sleepTracking: Boolean = true,
+    /** Nightly sleep goal in minutes. */
+    val sleepGoalMinutes: Int = 8 * 60,
 ) {
     val cycleConfig: CycleConfig get() = CycleConfig(cycleLength, periodLength, pmsDays)
 }
@@ -86,6 +90,8 @@ class SettingsRepository(context: Context) {
         val appLock = stringPreferencesKey("app_lock")
         val prayerTracking = booleanPreferencesKey("prayer_tracking")
         val tourSeen = booleanPreferencesKey("tour_seen")
+        val sleepTracking = booleanPreferencesKey("sleep_tracking")
+        val sleepGoal = intPreferencesKey("sleep_goal")
     }
 
     val settings: Flow<UserSettings> = store.data
@@ -121,6 +127,8 @@ class SettingsRepository(context: Context) {
             p.putOrRemove(Keys.appLock, s.appLock.name, d.appLock.name)
             p.putOrRemove(Keys.prayerTracking, s.prayerTracking, d.prayerTracking)
             p.putOrRemove(Keys.tourSeen, s.tourSeen, d.tourSeen)
+            p.putOrRemove(Keys.sleepTracking, s.sleepTracking, d.sleepTracking)
+            p.putOrRemove(Keys.sleepGoal, s.sleepGoalMinutes, d.sleepGoalMinutes)
         }
     }
 
@@ -153,6 +161,8 @@ class SettingsRepository(context: Context) {
             appLock = p[Keys.appLock]?.let { runCatching { AppLockMode.valueOf(it) }.getOrNull() } ?: d.appLock,
             prayerTracking = p[Keys.prayerTracking] ?: d.prayerTracking,
             tourSeen = p[Keys.tourSeen] ?: d.tourSeen,
+            sleepTracking = p[Keys.sleepTracking] ?: d.sleepTracking,
+            sleepGoalMinutes = p[Keys.sleepGoal] ?: d.sleepGoalMinutes,
         )
     }
 }

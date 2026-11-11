@@ -264,6 +264,24 @@ interface GoalDao {
     suspend fun unlinkHabit(habitId: Long)
 }
 
+@Dao
+interface SleepDao {
+    @Query("SELECT * FROM sleep_logs ORDER BY date")
+    fun observeAll(): Flow<List<SleepLogEntity>>
+
+    @Query("SELECT * FROM sleep_logs ORDER BY date")
+    suspend fun all(): List<SleepLogEntity>
+
+    @Query("SELECT * FROM sleep_logs ORDER BY date DESC LIMIT 1")
+    suspend fun latest(): SleepLogEntity?
+
+    @Upsert
+    suspend fun upsert(entry: SleepLogEntity)
+
+    @Query("DELETE FROM sleep_logs WHERE date = :day")
+    suspend fun delete(day: Long)
+}
+
 /** Restores a backup: swaps the stored records for the ones in a backup file. */
 @Dao
 abstract class BackupDao {
@@ -280,6 +298,7 @@ abstract class BackupDao {
     @Query("DELETE FROM focus_sessions") protected abstract suspend fun clearFocusSessions()
     @Query("DELETE FROM reflections") protected abstract suspend fun clearReflections()
     @Query("DELETE FROM prayer_logs") protected abstract suspend fun clearPrayerLogs()
+    @Query("DELETE FROM sleep_logs") protected abstract suspend fun clearSleepLogs()
     @Query("DELETE FROM period_days") protected abstract suspend fun clearPeriodDays()
     @Query("DELETE FROM cycle_symptoms") protected abstract suspend fun clearCycleSymptoms()
 
@@ -292,6 +311,7 @@ abstract class BackupDao {
     @Insert protected abstract suspend fun insertFocusSessions(rows: List<FocusSessionEntity>)
     @Insert protected abstract suspend fun insertReflections(rows: List<ReflectionEntity>)
     @Insert protected abstract suspend fun insertPrayerLogs(rows: List<PrayerLogEntity>)
+    @Insert protected abstract suspend fun insertSleepLogs(rows: List<SleepLogEntity>)
     @Insert protected abstract suspend fun insertPeriodDays(rows: List<PeriodDayEntity>)
     @Insert protected abstract suspend fun insertCycleSymptoms(rows: List<CycleSymptomEntity>)
     @Insert protected abstract suspend fun insertGoals(rows: List<GoalEntity>)
@@ -318,6 +338,7 @@ abstract class BackupDao {
         clearFocusSessions()
         clearReflections()
         clearPrayerLogs()
+        clearSleepLogs()
 
         insertHabits(data.habits)
         insertHabitSchedules(data.habitSchedules)
@@ -328,6 +349,7 @@ abstract class BackupDao {
         insertFocusSessions(data.focusSessions)
         insertReflections(data.reflections)
         insertPrayerLogs(data.prayerLogs)
+        insertSleepLogs(data.sleepLogs)
         insertGoals(data.goals)
         insertGoalMilestones(data.goalMilestones)
         insertGoalTasks(data.goalTasks)

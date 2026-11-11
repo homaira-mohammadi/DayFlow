@@ -24,8 +24,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         GoalMilestoneEntity::class,
         GoalTaskEntity::class,
         GoalHabitEntity::class,
+        SleepLogEntity::class,
     ],
-    version = 7,
+    version = 8,
     exportSchema = true,
 )
 abstract class DayFlowDatabase : RoomDatabase() {
@@ -37,6 +38,7 @@ abstract class DayFlowDatabase : RoomDatabase() {
     abstract fun cycleDao(): CycleDao
     abstract fun prayerDao(): PrayerDao
     abstract fun goalDao(): GoalDao
+    abstract fun sleepDao(): SleepDao
     abstract fun backupDao(): BackupDao
 
     companion object {
@@ -125,9 +127,20 @@ abstract class DayFlowDatabase : RoomDatabase() {
             }
         }
 
+        /** Version 8 adds the sleep tracker; nothing existing is changed. */
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `sleep_logs` (`date` INTEGER NOT NULL, `bedMinutes` INTEGER NOT NULL, " +
+                        "`wakeMinutes` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, PRIMARY KEY(`date`))",
+                )
+            }
+        }
+
         /** Every upgrade step, oldest first. The migration tests run all of them. */
         val MIGRATIONS: Array<Migration> = arrayOf(
             MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7,
+            MIGRATION_7_8,
         )
     }
 }

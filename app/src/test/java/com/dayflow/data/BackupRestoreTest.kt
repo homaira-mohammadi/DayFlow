@@ -14,6 +14,7 @@ import com.dayflow.data.db.PeriodDayEntity
 import com.dayflow.data.db.PrayerLogEntity
 import com.dayflow.data.db.ReflectionEntity
 import com.dayflow.data.db.RestDayEntity
+import com.dayflow.data.db.SleepLogEntity
 import com.dayflow.data.db.TaskEntity
 import com.dayflow.data.db.TaskRescheduleEntity
 import com.dayflow.data.repo.BackupFormatException
@@ -147,6 +148,7 @@ class BackupRestoreTest {
         db.prayerDao().upsert(PrayerLogEntity(101, Prayer.FAJR, PrayerStatus.ON_TIME, 8))
         db.cycleDao().upsertPeriodDays(listOf(PeriodDayEntity(90, PeriodFlow.LIGHT)))
         db.cycleDao().upsertSymptoms(CycleSymptomEntity(90, "CRAMPS", "x"))
+        db.sleepDao().upsert(SleepLogEntity(date = 101, bedMinutes = 1380, wakeMinutes = 420, updatedAt = 3))
         val goals = GoalRepository(db)
         val goal = goals.save(GoalEntity(title = "Read more", description = "One book a month", targetDate = 400, createdAt = 9))
         goals.addMilestone(goal, "Finish the first book")
@@ -165,6 +167,7 @@ class BackupRestoreTest {
         db.reflectionDao().all(),
         db.focusDao().all().map { it.copy(id = 0) },
         db.prayerDao().all(),
+        db.sleepDao().all(),
         db.goalDao().goals(),
         db.goalDao().milestones().map { it.copy(id = 0) },
         db.goalDao().taskLinks(),

@@ -9,6 +9,7 @@ import com.dayflow.data.db.GoalEntity
 import com.dayflow.data.db.GoalHabitEntity
 import com.dayflow.data.db.GoalMilestoneEntity
 import com.dayflow.data.db.GoalTaskEntity
+import com.dayflow.data.db.SleepLogEntity
 import com.dayflow.domain.Mood
 import com.dayflow.domain.PeriodFlow
 import com.dayflow.domain.Prayer
@@ -117,6 +118,26 @@ class MigrationTest {
         assertEquals(1L, db.goalDao().taskLinks().single().taskId)
         assertEquals(1L, db.goalDao().habitLinks().single().habitId)
         assertTasksAndHabitsKept(db)
+    }
+
+    @Test fun `a version 7 database keeps its goals and gains the sleep tracker`() = runBlocking {
+        createOldDatabase(7, schemaStatements(7)) {
+            seedTasksAndHabits()
+            execSQL("INSERT INTO goals (id, title, description, targetDate, status, createdAt) VALUES (1, 'Read more', 'One book a month', 20800, 'ACTIVE', 9)")
+            execSQL("INSERT INTO goal_milestones (goalId, title, done, sortOrder) VALUES (1, 'Finish the first book', 1, 1)")
+            execSQL("INSERT INTO goal_tasks (taskId, goalId) VALUES (1, 1)")
+            execSQL("INSERT INTO goal_habits (habitId, goalId) VALUES (1, 1)")
+        }
+        val db = upgrade()
+        assertTasksAndHabitsKept(db)
+        assertEquals("Read more", db.goalDao().goals().single().title)
+        assertEquals(true, db.goalDao().milestones().single().done)
+        assertEquals(1L, db.goalDao().taskLinks().single().goalId)
+        assertEquals(1L, db.goalDao().habitLinks().single().goalId)
+
+        assertTrue(db.sleepDao().all().isEmpty())
+        db.sleepDao().upsert(SleepLogEntity(date = 19701, bedMinutes = 23 * 60, wakeMinutes = 7 * 60))
+        assertEquals(7 * 60, db.sleepDao().latest()?.wakeMinutes)
     }
 
     // ---- Building old databases ----

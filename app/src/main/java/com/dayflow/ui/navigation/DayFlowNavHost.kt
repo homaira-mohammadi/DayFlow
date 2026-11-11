@@ -45,6 +45,7 @@ import com.dayflow.ui.habits.HabitEditorScreen
 import com.dayflow.ui.habits.HabitsScreen
 import com.dayflow.ui.prayer.PrayerHistoryScreen
 import com.dayflow.ui.progress.ProgressScreen
+import com.dayflow.ui.sleep.SleepHistoryScreen
 import com.dayflow.ui.reflection.ReflectionEditorScreen
 import com.dayflow.ui.reflection.ReflectionHistoryScreen
 import com.dayflow.ui.settings.SettingsScreen
@@ -74,6 +75,7 @@ private object Routes {
     const val FOCUS_HISTORY = "focus-history"
     const val CYCLE_CALENDAR = "cycle-calendar"
     const val PRAYER_HISTORY = "prayer-history"
+    const val SLEEP_HISTORY = "sleep-history"
 
     fun habit(id: Long) = "habit/$id"
     /** [goal] links a new habit to that goal. */
@@ -148,6 +150,7 @@ fun DayFlowNavHost(cycleEnabled: Boolean, lockPrivate: Boolean, nav: NavHostCont
                     onOpenFocus = { nav.navigateToTab(TopLevel.FOCUS.route) },
                     onOpenCycle = { nav.navigateToTab(TopLevel.CYCLE.route) },
                     onOpenPrayerHistory = { nav.navigate(Routes.PRAYER_HISTORY) },
+                    onOpenSleepHistory = { nav.navigate(Routes.SLEEP_HISTORY) },
                     hidePrivate = hidePrivate,
                 )
             }
@@ -163,6 +166,7 @@ fun DayFlowNavHost(cycleEnabled: Boolean, lockPrivate: Boolean, nav: NavHostCont
                 )
             }
             composable(TopLevel.FOCUS.route) { FocusScreen(onOpenHistory = { nav.navigate(Routes.FOCUS_HISTORY) }) }
+            composable(Routes.SLEEP_HISTORY) { SleepHistoryScreen(onBack = { nav.popBackStack() }) }
             composable(Routes.PRAYER_HISTORY) { PrayerHistoryScreen(onBack = { nav.popBackStack() }) }
             composable(Routes.FOCUS_HISTORY) { FocusHistoryScreen(onBack = { nav.popBackStack() }) }
             composable(TopLevel.HABITS.route) {

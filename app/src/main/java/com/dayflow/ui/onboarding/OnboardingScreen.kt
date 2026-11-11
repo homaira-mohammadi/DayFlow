@@ -34,6 +34,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Bedtime
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Insights
 import androidx.compose.material.icons.filled.Lock
@@ -351,6 +352,7 @@ private fun DonePage(result: OnboardingResult) {
                 Included(Icons.Filled.TaskAlt, "Tasks & daily plan")
                 Included(Icons.Filled.Loop, "Habits & streaks")
                 Included(Icons.Filled.Insights, "Progress & focus timer")
+                Included(Icons.Filled.Bedtime, "Sleep tracker")
                 if (result.prayerTracking) Included(Icons.Filled.Mosque, "Prayer tracker")
                 if (result.periodTracking) Included(Icons.Filled.WaterDrop, "Period tracking")
             }

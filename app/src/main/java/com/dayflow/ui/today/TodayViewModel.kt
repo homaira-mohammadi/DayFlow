@@ -94,6 +94,22 @@ class TodayViewModel(c: AppContainer) : PlanViewModel(c) {
         )
     }.flowOn(Dispatchers.Default).stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
 
+    val sleep: StateFlow<SleepCardState?> = combine(c.sleep.nights, c.settings.settings, today) { nights, s, d ->
+        if (!s.sleepTracking) return@combine null
+        val latest = nights.values.maxByOrNull { it.date }
+        SleepCardState(
+            lastNight = nights[d],
+            goalMinutes = s.sleepGoalMinutes,
+            use24h = s.use24h,
+            defaultBed = latest?.bedMinutes ?: (23 * 60),
+            defaultWake = latest?.wakeMinutes ?: (7 * 60),
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), null)
+
+    fun saveSleep(bed: Int, wake: Int) = viewModelScope.launch { c.sleep.save(today.value, bed, wake) }
+
+    fun deleteSleep() = viewModelScope.launch { c.sleep.delete(today.value) }
+
     fun prayerPreviousDay() = prayerOffset.update { (it + 1).coerceAtMost(MAX_PRAYER_DAYS_BACK) }
 
     fun prayerNextDay() = prayerOffset.update { (it - 1).coerceAtLeast(0) }

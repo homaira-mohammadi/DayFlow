@@ -229,6 +229,15 @@ data class GoalHabitEntity(
     val goalId: Long,
 )
 
+/** One night of sleep, filed under the morning of waking up. Times are minutes after midnight. */
+@Entity(tableName = "sleep_logs")
+data class SleepLogEntity(
+    @PrimaryKey val date: Long,
+    val bedMinutes: Int,
+    val wakeMinutes: Int,
+    val updatedAt: Long = System.currentTimeMillis(),
+)
+
 data class HabitWithSchedules(
     @Embedded val habit: HabitEntity,
     @Relation(parentColumn = "id", entityColumn = "habitId")

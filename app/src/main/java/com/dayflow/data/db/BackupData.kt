@@ -11,6 +11,7 @@ data class BackupData(
     val focusSessions: List<FocusSessionEntity>,
     val reflections: List<ReflectionEntity>,
     val prayerLogs: List<PrayerLogEntity>,
+    val sleepLogs: List<SleepLogEntity> = emptyList(),
     val goals: List<GoalEntity> = emptyList(),
     val goalMilestones: List<GoalMilestoneEntity> = emptyList(),
     val goalTasks: List<GoalTaskEntity> = emptyList(),

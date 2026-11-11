@@ -6,7 +6,7 @@
 
 <p align="center">
   <b>Plan your day. Build habits. Grow a little every day.</b><br/>
-  A calm, private daily planner, habit tracker and prayer tracker for Android.
+  A calm, private daily planner, habit, prayer and sleep tracker for Android.
 </p>
 
 <p align="center">
@@ -31,6 +31,7 @@
 |---|---|
 | ☀️ **Today** | Your tasks and habits for the day, up to three starred priorities, a live progress ring and a morning reflection with mood, energy and a photo. |
 | 🕌 **Prayer tracker** | Mark Fajr, Dhuhr, Asr, Maghrib and Isha as **on time**, **late** or **missed**. Includes a daily streak, a line chart over 7 / 30 / 90 days and a breakdown for each prayer. |
+| 🌙 **Sleep tracker** | Log when you went to bed and woke up. Line charts show your hours of sleep and your wake-up times, plus your average, your goal and how steady your schedule is. |
 | 🔁 **Habits** | Habits for any days of the week, with goals, busy-day **minimum versions**, streaks and rest days. Editing a habit never rewrites past days. |
 | 📅 **Calendar** | Week and month views. Unfinished tasks are never moved automatically: you choose where they go. |
 | ⏱️ **Focus** | A focus timer with short and long breaks, linked to tasks, with a session history. |
@@ -84,6 +85,19 @@ New users get a short welcome flow with one question per screen, then a guided t
 - With period tracking on, **logged** period days are excused: the buttons are replaced by a note, the chart shades the day, and the day neither counts toward nor breaks a streak. Predicted days are not excused, since predictions can be wrong.
 - Turn it on or off in **Settings → Prayers**. Prayer records are included in data export.
 
+## 🌙 Sleep
+
+<p align="center">
+  <img src="screenshots/sleep_card.png" width="220" alt="Sleep card on Today" />
+  <img src="screenshots/sleep_history_month.png" width="220" alt="Sleep charts" />
+  <img src="screenshots/sleep_history_stats.png" width="220" alt="Sleep summary" />
+</p>
+
+- The **Sleep** card on Today asks how you slept. Add when you **went to bed** and when you **woke up**; the duration is worked out for you, even across midnight.
+- A progress bar shows how close you came to your **sleep goal** (8 hours by default; change it in **Settings → Sleep**).
+- **History** shows two line charts for 7 / 30 / 90 days: **hours slept** with your goal line, and **wake-up time** with your usual time. It also shows your average sleep, nights that reached the goal, usual bedtime and wake-up, how steady your wake-up time is, and your longest and shortest nights.
+- Tap any night in the list to correct or delete it. Sleep records are included in the backup file.
+
 ## 📥 Download & Install APK
 
 You can download and install the pre-built app directly without building from source:
@@ -111,7 +125,7 @@ The APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
 ## Tech stack
 
 - **Kotlin** and **Jetpack Compose** (Material 3), with edge-to-edge UI, dynamic color and a dark theme
-- **Room** with versioned migrations (current schema version 6), plus **DataStore** for settings
+- **Room** with versioned migrations (current schema version 8), plus **DataStore** for settings
 - **AlarmManager** reminders with Done / Snooze / Tomorrow actions
 - **androidx.biometric** for the optional app lock
 - No third-party analytics, no network access
