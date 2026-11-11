@@ -41,6 +41,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Lock
@@ -110,7 +111,7 @@ import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
 
-private enum class SettingsDialog { NAME, ACCENT, WEEK_START, MORNING, EVENING, ABOUT, HELP, DELETE, GENDER, CYCLE_LENGTH, PERIOD_LENGTH, PMS_DAYS, EXPORT, DELETE_CYCLE, APP_LOCK }
+private enum class SettingsDialog { NAME, ACCENT, WEEK_START, MORNING, EVENING, ABOUT, HELP, DELETE, GENDER, CYCLE_LENGTH, PERIOD_LENGTH, PMS_DAYS, EXPORT, RESTORE, DELETE_CYCLE, APP_LOCK }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -137,6 +138,9 @@ fun SettingsScreen(
     var exportCycle by remember { mutableStateOf(false) }
     val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         if (uri != null) vm.export(context.contentResolver, uri, exportCycle)
+    }
+    val restoreLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) vm.restore(context.contentResolver, uri)
     }
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         vm.update { it.copy(notifications = granted) }
@@ -290,6 +294,9 @@ fun SettingsScreen(
                 SettingsRow(Icons.Filled.FileDownload, "Export data", subtitle = "Save a JSON backup of everything",
                     onClick = { dialog = SettingsDialog.EXPORT })
                 RowDivider()
+                SettingsRow(Icons.Filled.FileUpload, "Restore from backup", subtitle = "Bring back an exported JSON file",
+                    onClick = { dialog = SettingsDialog.RESTORE })
+                RowDivider()
                 SettingsRow(Icons.Filled.DeleteForever, "Delete all data", danger = true, onClick = { dialog = SettingsDialog.DELETE })
             }
 
@@ -362,7 +369,7 @@ fun SettingsScreen(
             title = { Text("Export data") },
             text = {
                 Column {
-                    Text("Saves your tasks, habits, reflections and focus sessions as a JSON file.")
+                    Text("Saves your tasks, habits, reflections and focus sessions as a JSON file. On a new phone, use Restore from backup to bring them back. Photos aren't included.")
                     if (s.cycleTracking || exportCycle) {
                         Row(
                             Modifier.fillMaxWidth().padding(top = 12.dp).clickable { exportCycle = !exportCycle },
@@ -381,6 +388,15 @@ fun SettingsScreen(
                 }) { Text("Export") }
             },
             dismissButton = { TextButton(onClick = { dialog = null }) { Text("Cancel") } },
+        )
+        SettingsDialog.RESTORE -> ConfirmDialog(
+            title = "Restore from a backup?",
+            body = "This replaces the tasks, habits, reflections and records on this phone with the ones in the backup file. " +
+                "Settings are kept, and period data is only replaced if the backup includes it. Photos aren't part of a backup file.",
+            confirm = "Choose file",
+            onDismiss = { dialog = null },
+            // Some file apps don't label .json files as JSON, so the other common labels are allowed too.
+            onConfirm = { restoreLauncher.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) },
         )
         SettingsDialog.DELETE_CYCLE -> ConfirmDialog(
             title = "Delete period data?",

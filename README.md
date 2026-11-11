@@ -36,7 +36,7 @@
 | ⏱️ **Focus** | A focus timer with short and long breaks, linked to tasks, with a session history. |
 | 📈 **Progress** | Completion charts, habit rates and a consistency heatmap. |
 | 🩸 **Cycle** *(optional)* | Period calendar, predictions, PMS days and symptoms. On logged period days, prayers are marked as **excused** and streaks are not broken. |
-| 🔒 **Privacy** | No account and no internet permission. Optional fingerprint or PIN app lock and a JSON export. |
+| 🔒 **Privacy** | No account and no internet permission. Optional fingerprint or PIN app lock, and a JSON backup you can export and restore. |
 
 ##  Gallery
 
@@ -126,6 +126,7 @@ The APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
 ## Privacy & security
 
 - **No internet permission.** Data only leaves the phone through an export you start, or a direct phone-to-phone transfer.
+- **Moving to a new phone:** use Android's phone-to-phone transfer, or **Settings → Export data** on the old phone and **Settings → Restore from backup** on the new one. A restore replaces the records on the phone with the ones in the file; the file is fully checked first and the swap is a single transaction, so a damaged file changes nothing. Settings are kept, period data is only replaced if the backup includes it, and photos are not part of the backup file.
 - **Backups:** personal records (database, photos, settings, timer state) are excluded from Google cloud backup and only included in device-to-device transfers (`res/xml/data_extraction_rules.xml`, `backup_rules.xml`).
 - **Settings only store values that differ from the defaults**, so nothing personal is kept until you choose it.
 - **App lock** (Settings → Privacy & security) covers the whole app or only Journal & Cycle, using the phone's biometrics or screen-lock PIN. It relocks 30 s after you leave the app, and while it's on, `FLAG_SECURE` hides content from recent apps and screenshots.

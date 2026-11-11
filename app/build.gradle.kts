@@ -64,4 +64,6 @@ dependencies {
     implementation(libs.androidx.fragment.ktx)
 
     testImplementation(libs.junit)
+    // The JSON classes built into Android are empty stubs in plain unit tests.
+    testImplementation(libs.json)
 }

@@ -199,3 +199,61 @@ interface PrayerDao {
     @Query("DELETE FROM prayer_logs WHERE date = :day AND prayer = :prayer")
     suspend fun delete(day: Long, prayer: Prayer)
 }
+
+/** Restores a backup: swaps the stored records for the ones in a backup file. */
+@Dao
+abstract class BackupDao {
+    @Query("DELETE FROM habit_logs") protected abstract suspend fun clearHabitLogs()
+    @Query("DELETE FROM habit_schedules") protected abstract suspend fun clearHabitSchedules()
+    @Query("DELETE FROM habits") protected abstract suspend fun clearHabits()
+    @Query("DELETE FROM task_reschedules") protected abstract suspend fun clearTaskReschedules()
+    @Query("DELETE FROM tasks") protected abstract suspend fun clearTasks()
+    @Query("DELETE FROM rest_days") protected abstract suspend fun clearRestDays()
+    @Query("DELETE FROM focus_sessions") protected abstract suspend fun clearFocusSessions()
+    @Query("DELETE FROM reflections") protected abstract suspend fun clearReflections()
+    @Query("DELETE FROM prayer_logs") protected abstract suspend fun clearPrayerLogs()
+    @Query("DELETE FROM period_days") protected abstract suspend fun clearPeriodDays()
+    @Query("DELETE FROM cycle_symptoms") protected abstract suspend fun clearCycleSymptoms()
+
+    @Insert protected abstract suspend fun insertHabits(rows: List<HabitEntity>)
+    @Insert protected abstract suspend fun insertHabitSchedules(rows: List<HabitScheduleEntity>)
+    @Insert protected abstract suspend fun insertHabitLogs(rows: List<HabitLogEntity>)
+    @Insert protected abstract suspend fun insertTasks(rows: List<TaskEntity>)
+    @Insert protected abstract suspend fun insertTaskReschedules(rows: List<TaskRescheduleEntity>)
+    @Insert protected abstract suspend fun insertRestDays(rows: List<RestDayEntity>)
+    @Insert protected abstract suspend fun insertFocusSessions(rows: List<FocusSessionEntity>)
+    @Insert protected abstract suspend fun insertReflections(rows: List<ReflectionEntity>)
+    @Insert protected abstract suspend fun insertPrayerLogs(rows: List<PrayerLogEntity>)
+    @Insert protected abstract suspend fun insertPeriodDays(rows: List<PeriodDayEntity>)
+    @Insert protected abstract suspend fun insertCycleSymptoms(rows: List<CycleSymptomEntity>)
+
+    /**
+     * Runs as one transaction: if any row is rejected, nothing changes and the old records stay.
+     * Period data is only replaced when the backup carries it.
+     */
+    @Transaction
+    open suspend fun replaceAll(data: BackupData) {
+        clearHabitLogs()
+        clearHabitSchedules()
+        clearHabits()
+        clearTaskReschedules()
+        clearTasks()
+        clearRestDays()
+        clearFocusSessions()
+        clearReflections()
+        clearPrayerLogs()
+
+        insertHabits(data.habits)
+        insertHabitSchedules(data.habitSchedules)
+        insertHabitLogs(data.habitLogs)
+        insertTasks(data.tasks)
+        insertTaskReschedules(data.taskReschedules)
+        insertRestDays(data.restDays)
+        insertFocusSessions(data.focusSessions)
+        insertReflections(data.reflections)
+        insertPrayerLogs(data.prayerLogs)
+
+        data.periodDays?.let { clearPeriodDays(); insertPeriodDays(it) }
+        data.cycleSymptoms?.let { clearCycleSymptoms(); insertCycleSymptoms(it) }
+    }
+}

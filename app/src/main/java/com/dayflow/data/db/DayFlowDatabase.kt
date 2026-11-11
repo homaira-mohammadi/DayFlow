@@ -32,6 +32,7 @@ abstract class DayFlowDatabase : RoomDatabase() {
     abstract fun focusDao(): FocusDao
     abstract fun cycleDao(): CycleDao
     abstract fun prayerDao(): PrayerDao
+    abstract fun backupDao(): BackupDao
 
     companion object {
         fun build(context: Context): DayFlowDatabase =

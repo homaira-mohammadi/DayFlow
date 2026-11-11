@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dayflow.AppContainer
 import com.dayflow.data.prefs.UserSettings
+import com.dayflow.data.repo.BackupFormatException
 import com.dayflow.ui.appViewModelFactory
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlin.coroutines.cancellation.CancellationException
 
 class SettingsViewModel(private val c: AppContainer) : ViewModel() {
     val settings: StateFlow<UserSettings?> = c.settings.settings.stateIn(viewModelScope, SharingStarted.Eagerly, null)
@@ -30,6 +32,21 @@ class SettingsViewModel(private val c: AppContainer) : ViewModel() {
             resolver.openOutputStream(uri)?.use { c.backup.exportJson(it, includeCycle) } ?: error("Couldn't open the file")
             "Data exported"
         }.getOrElse { "Export failed: ${it.message}" }
+    }
+
+    /** Replaces the stored records with a backup file's; a file that can't be used changes nothing. */
+    fun restore(resolver: ContentResolver, uri: Uri) = viewModelScope.launch {
+        _message.value = try {
+            val summary = resolver.openInputStream(uri)?.use { c.backup.importJson(it) } ?: error("Couldn't open the file")
+            c.reminders.refreshAll()
+            "Backup restored: ${summary.habits} habits and ${summary.tasks} tasks"
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: BackupFormatException) {
+            e.message
+        } catch (e: Exception) {
+            "Restore failed: ${e.message}"
+        }
     }
 
     fun deleteAll() = viewModelScope.launch {

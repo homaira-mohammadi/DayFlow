@@ -40,6 +40,14 @@ class PhotoStore(context: Context) {
         dir.deleteRecursively()
     }
 
+    /** True when [name] is a plain file name (not a path) of a photo stored here. */
+    fun has(name: String): Boolean = File(name).name == name && File(dir, name).isFile
+
+    /** Deletes every stored photo whose name isn't in [names]. */
+    fun retainOnly(names: Set<String>) {
+        dir.listFiles()?.forEach { if (it.name !in names) it.delete() }
+    }
+
     private fun decode(uri: Uri): Bitmap? {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             // ImageDecoder applies the photo's rotation, so portrait shots aren't saved sideways.
