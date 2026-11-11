@@ -31,6 +31,9 @@ data class TaskForm(
 class TaskEditorViewModel(private val c: AppContainer, handle: SavedStateHandle) : ViewModel() {
     private val taskId: Long = handle.get<Long>("id") ?: -1L
     val isNew = taskId <= 0
+    /** Set when the editor was opened from a goal: the new task is linked to it. */
+    private val goalId: Long = handle.get<Long>("goal") ?: -1L
+    val linksToGoal = isNew && goalId > 0
     var original by mutableStateOf<TaskEntity?>(null)
         private set
 
@@ -78,7 +81,8 @@ class TaskEditorViewModel(private val c: AppContainer, handle: SavedStateHandle)
             remind = f.remind && f.timeMinutes != null,
         )
         viewModelScope.launch {
-            c.tasks.save(task)
+            val id = c.tasks.save(task)
+            if (linksToGoal) c.goals.linkTask(goalId, id)
             onSaved()
         }
     }

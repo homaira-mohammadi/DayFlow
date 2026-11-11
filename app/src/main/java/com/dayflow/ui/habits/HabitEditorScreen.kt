@@ -94,6 +94,9 @@ fun HabitEditorScreen(
             Modifier.fillMaxSize().padding(padding).imePadding().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp),
         ) {
             vm.error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(vertical = 8.dp)) }
+            if (vm.linksToGoal) {
+                Text("This habit will be linked to your goal.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
+            }
             OutlinedTextField(
                 value = f.name,
                 onValueChange = { v -> vm.update { it.copy(name = v) } },

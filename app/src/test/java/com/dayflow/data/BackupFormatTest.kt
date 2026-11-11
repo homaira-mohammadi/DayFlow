@@ -3,6 +3,10 @@ package com.dayflow.data
 import com.dayflow.data.db.BackupData
 import com.dayflow.data.db.CycleSymptomEntity
 import com.dayflow.data.db.FocusSessionEntity
+import com.dayflow.data.db.GoalEntity
+import com.dayflow.data.db.GoalHabitEntity
+import com.dayflow.data.db.GoalMilestoneEntity
+import com.dayflow.data.db.GoalTaskEntity
 import com.dayflow.data.db.HabitEntity
 import com.dayflow.data.db.HabitLogEntity
 import com.dayflow.data.db.HabitScheduleEntity
@@ -15,6 +19,7 @@ import com.dayflow.data.db.TaskRescheduleEntity
 import com.dayflow.data.repo.BackupFormat
 import com.dayflow.data.repo.BackupFormatException
 import com.dayflow.domain.DaySection
+import com.dayflow.domain.GoalStatus
 import com.dayflow.domain.HabitGoalType
 import com.dayflow.domain.HabitStatus
 import com.dayflow.domain.Mood
@@ -62,6 +67,16 @@ class BackupFormatTest {
             ReflectionEntity(date = 19_704, updatedAt = 9),
         ),
         prayerLogs = listOf(PrayerLogEntity(date = 19_703, prayer = Prayer.FAJR, status = PrayerStatus.LATE, updatedAt = 3)),
+        goals = listOf(
+            GoalEntity(id = 2, title = "Improve programming skills", description = "For the new job", targetDate = 20_800, status = GoalStatus.ACHIEVED, createdAt = 11),
+            GoalEntity(id = 5, title = "Get fit", createdAt = 12),
+        ),
+        goalMilestones = listOf(
+            GoalMilestoneEntity(goalId = 2, title = "Build one project", done = true, sortOrder = 1),
+            GoalMilestoneEntity(goalId = 2, title = "Solve 50 problems", sortOrder = 2),
+        ),
+        goalTasks = listOf(GoalTaskEntity(taskId = 9, goalId = 2)),
+        goalHabits = listOf(GoalHabitEntity(habitId = 3, goalId = 2)),
         periodDays = listOf(PeriodDayEntity(date = 19_690, flow = PeriodFlow.HEAVY)),
         cycleSymptoms = listOf(CycleSymptomEntity(date = 19_690, symptoms = "CRAMPS,FATIGUE", note = "rest")),
     )
@@ -97,6 +112,16 @@ class BackupFormatTest {
         assertEquals(false, parsed.tasks[0].remind)
         assertEquals(listOf(RestDayEntity(date = 19_710)), parsed.restDays)
         assertEquals(emptyList<PrayerLogEntity>(), parsed.prayerLogs)
+    }
+
+    @Test fun `a version 2 backup from before goals is still read`() {
+        val v2 = JSONObject(export(includeCycle = false)).apply {
+            put("version", 2)
+            listOf("goals", "goalMilestones", "goalTasks", "goalHabits").forEach { remove(it) }
+        }
+        val parsed = BackupFormat.parse(v2.toString())
+        assertEquals(sample.tasks, parsed.tasks)
+        assertTrue(parsed.goals.isEmpty() && parsed.goalMilestones.isEmpty() && parsed.goalTasks.isEmpty() && parsed.goalHabits.isEmpty())
     }
 
     @Test fun `files that are not backups are refused`() {

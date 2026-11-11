@@ -6,6 +6,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.dayflow.data.db.CycleSymptomEntity
 import com.dayflow.data.db.DayFlowDatabase
 import com.dayflow.data.db.FocusSessionEntity
+import com.dayflow.data.db.GoalEntity
 import com.dayflow.data.db.HabitEntity
 import com.dayflow.data.db.HabitLogEntity
 import com.dayflow.data.db.HabitScheduleEntity
@@ -17,6 +18,7 @@ import com.dayflow.data.db.TaskEntity
 import com.dayflow.data.db.TaskRescheduleEntity
 import com.dayflow.data.repo.BackupFormatException
 import com.dayflow.data.repo.BackupRepository
+import com.dayflow.data.repo.GoalRepository
 import com.dayflow.data.repo.PhotoStore
 import com.dayflow.domain.Mood
 import com.dayflow.domain.PeriodFlow
@@ -90,7 +92,9 @@ class BackupRestoreTest {
         val orphan = JSONObject(good).apply { getJSONArray("habitLogs").getJSONObject(0).put("habitId", 999) }
         // The same task twice.
         val duplicate = JSONObject(good).apply { getJSONArray("tasks").put(getJSONArray("tasks").getJSONObject(0)) }
-        listOf(orphan, duplicate).forEach { broken ->
+        // A task linked to a goal the file doesn't contain.
+        val lostGoal = JSONObject(good).apply { getJSONArray("goalTasks").getJSONObject(0).put("goalId", 999) }
+        listOf(orphan, duplicate, lostGoal).forEach { broken ->
             val error = assertThrows(BackupFormatException::class.java) { runBlocking { restore(newPhone, broken.toString()) } }
             assertTrue("nothing was changed" in error.message!!)
             assertEquals(before, records(newPhone))
@@ -143,6 +147,11 @@ class BackupRestoreTest {
         db.prayerDao().upsert(PrayerLogEntity(101, Prayer.FAJR, PrayerStatus.ON_TIME, 8))
         db.cycleDao().upsertPeriodDays(listOf(PeriodDayEntity(90, PeriodFlow.LIGHT)))
         db.cycleDao().upsertSymptoms(CycleSymptomEntity(90, "CRAMPS", "x"))
+        val goals = GoalRepository(db)
+        val goal = goals.save(GoalEntity(title = "Read more", description = "One book a month", targetDate = 400, createdAt = 9))
+        goals.addMilestone(goal, "Finish the first book")
+        goals.linkTask(goal, task)
+        goals.linkHabit(goal, habit)
     }
 
     /** Everything stored, with the ids that a restore is free to renumber set to zero. */
@@ -156,6 +165,10 @@ class BackupRestoreTest {
         db.reflectionDao().all(),
         db.focusDao().all().map { it.copy(id = 0) },
         db.prayerDao().all(),
+        db.goalDao().goals(),
+        db.goalDao().milestones().map { it.copy(id = 0) },
+        db.goalDao().taskLinks(),
+        db.goalDao().habitLinks(),
         db.cycleDao().periodDays(),
         db.cycleDao().symptoms(),
     )

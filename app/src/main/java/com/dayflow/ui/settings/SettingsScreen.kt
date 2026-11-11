@@ -369,7 +369,7 @@ fun SettingsScreen(
             title = { Text("Export data") },
             text = {
                 Column {
-                    Text("Saves your tasks, habits, reflections and focus sessions as a JSON file. On a new phone, use Restore from backup to bring them back. Photos aren't included.")
+                    Text("Saves your tasks, habits, goals, reflections and focus sessions as a JSON file. On a new phone, use Restore from backup to bring them back. Photos aren't included.")
                     if (s.cycleTracking || exportCycle) {
                         Row(
                             Modifier.fillMaxWidth().padding(top = 12.dp).clickable { exportCycle = !exportCycle },
@@ -391,7 +391,7 @@ fun SettingsScreen(
         )
         SettingsDialog.RESTORE -> ConfirmDialog(
             title = "Restore from a backup?",
-            body = "This replaces the tasks, habits, reflections and records on this phone with the ones in the backup file. " +
+            body = "This replaces the tasks, habits, goals, reflections and records on this phone with the ones in the backup file. " +
                 "Settings are kept, and period data is only replaced if the backup includes it. Photos aren't part of a backup file.",
             confirm = "Choose file",
             onDismiss = { dialog = null },
@@ -445,6 +445,7 @@ fun SettingsScreen(
 }
 
 private val faq = listOf(
+    "What are goals?" to "A goal is what you're working toward over weeks or months. Open the Progress tab and choose Set a goal, then add milestones and link the tasks and habits that move it forward. Progress is the share of milestones and linked tasks that are done; cancelled tasks aren't counted. Habits are ongoing, so they show their streak beside the goal instead.",
     "How do I complete a habit?" to "Tap the circle on the right of a habit. For amount or duration habits, tap the habit itself to enter how much you did.",
     "What is a minimum version?" to "A smaller target for busy days, like 5 minutes of reading instead of 20. It keeps your streak going, and the app still records that it was the minimum.",
     "What happens to unfinished tasks?" to "They appear under \"Unfinished from earlier\" on Today. Use the ⋮ menu to move each one to today, tomorrow, next week or any date. Nothing is moved automatically.",

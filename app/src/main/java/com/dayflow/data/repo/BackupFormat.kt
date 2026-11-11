@@ -3,6 +3,10 @@ package com.dayflow.data.repo
 import com.dayflow.data.db.BackupData
 import com.dayflow.data.db.CycleSymptomEntity
 import com.dayflow.data.db.FocusSessionEntity
+import com.dayflow.data.db.GoalEntity
+import com.dayflow.data.db.GoalHabitEntity
+import com.dayflow.data.db.GoalMilestoneEntity
+import com.dayflow.data.db.GoalTaskEntity
 import com.dayflow.data.db.HabitEntity
 import com.dayflow.data.db.HabitLogEntity
 import com.dayflow.data.db.HabitScheduleEntity
@@ -21,12 +25,12 @@ import org.json.JSONObject
 class BackupFormatException(message: String) : Exception(message)
 
 /**
- * The JSON backup file. Version 2 added task reminders, habit order and rest day notes;
- * version 1 files are still read, with those values falling back to their defaults.
+ * The JSON backup file. Version 2 added task reminders, habit order and rest day notes, and
+ * version 3 added goals. Older files are still read: what they lack falls back to its default.
  */
 object BackupFormat {
     const val FORMAT = "dayflow-export"
-    const val VERSION = 2
+    const val VERSION = 3
 
     /** Period data is sensitive, so it is only written when [includeCycle] is explicitly requested. */
     fun toJson(data: BackupData, includeCycle: Boolean, exportedAt: Long = System.currentTimeMillis()): JSONObject {
@@ -83,6 +87,17 @@ object BackupFormat {
                 JSONObject().put("date", p.date).put("prayer", p.prayer.name).put("status", p.status.name)
                     .put("updatedAt", p.updatedAt)
             }))
+        root
+            .put("goals", JSONArray(data.goals.map { g ->
+                JSONObject().put("id", g.id).put("title", g.title).put("description", g.description)
+                    .put("targetDate", g.targetDate ?: JSONObject.NULL).put("status", g.status.name)
+                    .put("createdAt", g.createdAt)
+            }))
+            .put("goalMilestones", JSONArray(data.goalMilestones.map { m ->
+                JSONObject().put("goalId", m.goalId).put("title", m.title).put("done", m.done).put("sortOrder", m.sortOrder)
+            }))
+            .put("goalTasks", JSONArray(data.goalTasks.map { JSONObject().put("taskId", it.taskId).put("goalId", it.goalId) }))
+            .put("goalHabits", JSONArray(data.goalHabits.map { JSONObject().put("habitId", it.habitId).put("goalId", it.goalId) }))
         if (includeCycle) {
             root.put("periodDays", JSONArray(data.periodDays.orEmpty().map { JSONObject().put("date", it.date).put("flow", it.flow.name) }))
             root.put("cycleSymptoms", JSONArray(data.cycleSymptoms.orEmpty().map {
@@ -171,6 +186,21 @@ object BackupFormat {
                         status = enumValueOf(o.getString("status")), updatedAt = o.getLong("updatedAt"),
                     )
                 },
+                goals = root.rows("goals") { o ->
+                    GoalEntity(
+                        id = o.id(), title = o.getString("title"), description = o.getString("description"),
+                        targetDate = o.longOrNull("targetDate"), status = enumValueOf(o.getString("status")),
+                        createdAt = o.getLong("createdAt"),
+                    )
+                },
+                goalMilestones = root.rows("goalMilestones") { o ->
+                    GoalMilestoneEntity(
+                        goalId = o.getLong("goalId"), title = o.getString("title"), done = o.getBoolean("done"),
+                        sortOrder = o.getInt("sortOrder"),
+                    )
+                },
+                goalTasks = root.rows("goalTasks") { o -> GoalTaskEntity(taskId = o.getLong("taskId"), goalId = o.getLong("goalId")) },
+                goalHabits = root.rows("goalHabits") { o -> GoalHabitEntity(habitId = o.getLong("habitId"), goalId = o.getLong("goalId")) },
                 periodDays = if (!root.has("periodDays")) null else root.rows("periodDays") { o ->
                     PeriodDayEntity(date = o.getLong("date"), flow = enumValueOf(o.getString("flow")))
                 },

@@ -37,6 +37,9 @@ import com.dayflow.ui.cycle.CycleCalendarScreen
 import com.dayflow.ui.cycle.CycleScreen
 import com.dayflow.ui.focus.FocusHistoryScreen
 import com.dayflow.ui.focus.FocusScreen
+import com.dayflow.ui.goals.GoalDetailScreen
+import com.dayflow.ui.goals.GoalEditorScreen
+import com.dayflow.ui.goals.GoalsScreen
 import com.dayflow.ui.habits.HabitDetailScreen
 import com.dayflow.ui.habits.HabitEditorScreen
 import com.dayflow.ui.habits.HabitsScreen
@@ -60,8 +63,11 @@ private enum class TopLevel(val route: String, val label: String, val icon: Imag
 
 private object Routes {
     const val HABIT_DETAIL = "habit/{id}"
-    const val HABIT_EDIT = "habit-edit?id={id}"
-    const val TASK_EDIT = "task-edit?id={id}&date={date}"
+    const val HABIT_EDIT = "habit-edit?id={id}&goal={goal}"
+    const val TASK_EDIT = "task-edit?id={id}&date={date}&goal={goal}"
+    const val GOALS = "goals"
+    const val GOAL_DETAIL = "goal/{id}"
+    const val GOAL_EDIT = "goal-edit?id={id}"
     const val REFLECTION_EDIT = "reflection?date={date}"
     const val REFLECTIONS = "reflections"
     const val SETTINGS = "settings"
@@ -70,9 +76,14 @@ private object Routes {
     const val PRAYER_HISTORY = "prayer-history"
 
     fun habit(id: Long) = "habit/$id"
-    fun editHabit(id: Long = -1) = "habit-edit?id=$id"
+    /** [goal] links a new habit to that goal. */
+    fun editHabit(id: Long = -1, goal: Long = -1) = "habit-edit?id=$id&goal=$goal"
+    fun goal(id: Long) = "goal/$id"
+    fun editGoal(id: Long = -1) = "goal-edit?id=$id"
     fun reflection(date: LocalDate) = "reflection?date=${date.toEpochDay()}"
-    fun editTask(id: Long = -1, date: LocalDate? = null) = "task-edit?id=$id&date=${date?.toEpochDay() ?: -1}"
+    /** [goal] links a new task to that goal. */
+    fun editTask(id: Long = -1, date: LocalDate? = null, goal: Long = -1) =
+        "task-edit?id=$id&date=${date?.toEpochDay() ?: -1}&goal=$goal"
 }
 
 private fun NavHostController.navigateToTab(route: String) = navigate(route) {
@@ -161,7 +172,44 @@ fun DayFlowNavHost(cycleEnabled: Boolean, lockPrivate: Boolean, nav: NavHostCont
                     onEditHabit = { nav.navigate(Routes.editHabit(it)) },
                 )
             }
-            composable(TopLevel.PROGRESS.route) { ProgressScreen() }
+            composable(TopLevel.PROGRESS.route) {
+                ProgressScreen(
+                    onOpenGoals = { nav.navigate(Routes.GOALS) },
+                    onOpenGoal = { nav.navigate(Routes.goal(it)) },
+                    onAddGoal = { nav.navigate(Routes.editGoal()) },
+                )
+            }
+            composable(Routes.GOALS) {
+                GoalsScreen(
+                    onBack = { nav.popBackStack() },
+                    onAddGoal = { nav.navigate(Routes.editGoal()) },
+                    onOpenGoal = { nav.navigate(Routes.goal(it)) },
+                    onEditGoal = { nav.navigate(Routes.editGoal(it)) },
+                )
+            }
+            composable(Routes.GOAL_DETAIL, arguments = listOf(navArgument("id") { type = NavType.LongType })) {
+                GoalDetailScreen(
+                    onBack = { nav.popBackStack() },
+                    onEdit = { nav.navigate(Routes.editGoal(it)) },
+                    onNewTask = { nav.navigate(Routes.editTask(goal = it)) },
+                    onNewHabit = { nav.navigate(Routes.editHabit(goal = it)) },
+                    onOpenTask = { nav.navigate(Routes.editTask(it)) },
+                    onOpenHabit = { nav.navigate(Routes.habit(it)) },
+                )
+            }
+            composable(
+                Routes.GOAL_EDIT,
+                arguments = listOf(navArgument("id") { type = NavType.LongType; defaultValue = -1L }),
+            ) {
+                GoalEditorScreen(
+                    onClose = { nav.popBackStack() },
+                    onSaved = { id, isNew ->
+                        nav.popBackStack()
+                        // A new goal opens straight away, ready for its milestones, tasks and habits.
+                        if (isNew) nav.navigate(Routes.goal(id))
+                    },
+                )
+            }
             composable(Routes.SETTINGS) {
                 SettingsScreen(onBack = { nav.popBackStack() }, onOpenReflections = { nav.navigate(Routes.REFLECTIONS) })
             }
@@ -171,7 +219,10 @@ fun DayFlowNavHost(cycleEnabled: Boolean, lockPrivate: Boolean, nav: NavHostCont
             }
             composable(
                 Routes.HABIT_EDIT,
-                arguments = listOf(navArgument("id") { type = NavType.LongType; defaultValue = -1L }),
+                arguments = listOf(
+                    navArgument("id") { type = NavType.LongType; defaultValue = -1L },
+                    navArgument("goal") { type = NavType.LongType; defaultValue = -1L },
+                ),
             ) {
                 HabitEditorScreen(onClose = { nav.popBackStack() })
             }
@@ -180,6 +231,7 @@ fun DayFlowNavHost(cycleEnabled: Boolean, lockPrivate: Boolean, nav: NavHostCont
                 arguments = listOf(
                     navArgument("id") { type = NavType.LongType; defaultValue = -1L },
                     navArgument("date") { type = NavType.LongType; defaultValue = -1L },
+                    navArgument("goal") { type = NavType.LongType; defaultValue = -1L },
                 ),
             ) {
                 TaskEditorScreen(onClose = { nav.popBackStack() })

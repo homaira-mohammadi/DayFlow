@@ -19,7 +19,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.Card
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -48,6 +51,9 @@ import com.dayflow.domain.Rate
 import com.dayflow.ui.Fmt
 import com.dayflow.ui.components.ColorDot
 import com.dayflow.ui.components.EmptyState
+import com.dayflow.ui.goals.GoalProgressLine
+import com.dayflow.ui.goals.GoalsState
+import com.dayflow.ui.goals.GoalsViewModel
 import com.dayflow.ui.components.LegendItem
 import com.dayflow.ui.components.SectionHeader
 import com.dayflow.ui.components.StatTile
@@ -57,12 +63,22 @@ import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProgressScreen(vm: ProgressViewModel = viewModel(factory = ProgressViewModel.Factory)) {
+fun ProgressScreen(
+    onOpenGoals: () -> Unit,
+    onOpenGoal: (Long) -> Unit,
+    onAddGoal: () -> Unit,
+    vm: ProgressViewModel = viewModel(factory = ProgressViewModel.Factory),
+    goalsVm: GoalsViewModel = viewModel(factory = GoalsViewModel.Factory),
+) {
     val state by vm.state.collectAsStateWithLifecycle()
+    val goals by goalsVm.state.collectAsStateWithLifecycle()
     Scaffold(topBar = { TopAppBar(title = { Text("Progress") }) }) { padding ->
         Column(
             Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(horizontal = 16.dp),
         ) {
+            GoalsOverview(goals, onOpenGoals, onOpenGoal, onAddGoal)
+
+            SectionHeader("This period")
             SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                 Period.entries.forEachIndexed { i, p ->
                     SegmentedButton(
@@ -210,5 +226,33 @@ private fun Heatmap(state: ProgressState) {
         LegendItem("0%") { Swatch(primary.copy(alpha = 0.15f)) }
         LegendItem("50%") { Swatch(primary.copy(alpha = 0.57f)) }
         LegendItem("100%") { Swatch(primary) }
+    }
+}
+
+/** What the person is working toward, above the numbers for the period. Shows the three nearest goals. */
+@Composable
+private fun GoalsOverview(goals: GoalsState, onOpenGoals: () -> Unit, onOpenGoal: (Long) -> Unit, onAddGoal: () -> Unit) {
+    if (goals.loading) return
+    SectionHeader("Goals") {
+        TextButton(onClick = if (goals.isEmpty) onAddGoal else onOpenGoals) { Text(if (goals.isEmpty) "Set a goal" else "See all") }
+    }
+    if (goals.active.isEmpty()) {
+        Text(
+            if (goals.isEmpty) "Goals connect your tasks and habits to what you're working toward over weeks or months."
+            else "No active goals right now.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        return
+    }
+    Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)) {
+        Column {
+            goals.active.take(3).forEach { s ->
+                Column(Modifier.fillMaxWidth().clickable { onOpenGoal(s.goal.id) }.padding(horizontal = 14.dp, vertical = 10.dp)) {
+                    Text(s.goal.title, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    GoalProgressLine(s, Modifier.padding(top = 4.dp))
+                }
+            }
+        }
     }
 }

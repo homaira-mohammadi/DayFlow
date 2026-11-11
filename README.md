@@ -34,6 +34,7 @@
 | 🔁 **Habits** | Habits for any days of the week, with goals, busy-day **minimum versions**, streaks and rest days. Editing a habit never rewrites past days. |
 | 📅 **Calendar** | Week and month views. Unfinished tasks are never moved automatically: you choose where they go. |
 | ⏱️ **Focus** | A focus timer with short and long breaks, linked to tasks, with a session history. |
+| 🎯 **Goals** | What you are working toward over weeks or months. Each goal has milestones, linked tasks and linked habits, an optional target date and a progress bar. Open them from the Progress tab. |
 | 📈 **Progress** | Completion charts, habit rates and a consistency heatmap. |
 | 🩸 **Cycle** *(optional)* | Period calendar, predictions, PMS days and symptoms. On logged period days, prayers are marked as **excused** and streaks are not broken. |
 | 🔒 **Privacy** | No account and no internet permission. Optional fingerprint or PIN app lock, and a JSON backup you can export and restore. |
@@ -117,11 +118,11 @@ The APK is written to `app/build/outputs/apk/debug/app-debug.apk`.
 
 ## Code map
 
-- `domain/`: pure rules for scheduling, streaks, completion %, minimum versions, cycle predictions and prayer streaks. All unit-tested.
-- `data/db`: Room entities, DAOs and migrations. Habit schedules are *versioned*, so editing a habit never rewrites past days.
+- `domain/`: pure rules for scheduling, streaks, completion %, minimum versions, cycle predictions, prayer streaks and goal progress. All unit-tested.
+- `data/db`: Room entities, DAOs and migrations. Habit schedules are *versioned*, so editing a habit never rewrites past days. Every migration only adds tables or columns, and `MigrationTest` upgrades a database from each older version to check that no data is lost.
 - `data/repo`: repositories. `PlanRepository` exposes one `History` snapshot that every screen derives from.
 - `notifications/`: reminders and boot handling.
-- `ui/`: Compose screens and ViewModels (`onboarding/`, `today/`, `prayer/`, `habits/`, `calendar/`, `focus/`, `progress/`, `cycle/`, `settings/`).
+- `ui/`: Compose screens and ViewModels (`onboarding/`, `today/`, `prayer/`, `habits/`, `calendar/`, `focus/`, `progress/`, `goals/`, `cycle/`, `settings/`).
 
 ## Privacy & security
 

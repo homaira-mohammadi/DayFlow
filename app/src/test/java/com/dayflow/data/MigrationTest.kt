@@ -5,6 +5,10 @@ import android.database.sqlite.SQLiteDatabase
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.dayflow.data.db.DayFlowDatabase
+import com.dayflow.data.db.GoalEntity
+import com.dayflow.data.db.GoalHabitEntity
+import com.dayflow.data.db.GoalMilestoneEntity
+import com.dayflow.data.db.GoalTaskEntity
 import com.dayflow.domain.Mood
 import com.dayflow.domain.PeriodFlow
 import com.dayflow.domain.Prayer
@@ -99,6 +103,20 @@ class MigrationTest {
         val prayer = db.prayerDao().all().single()
         assertEquals(Prayer.FAJR, prayer.prayer)
         assertEquals(PrayerStatus.LATE, prayer.status)
+    }
+
+    @Test fun `goals can be added to tasks and habits that existed before version 7`() = runBlocking {
+        createOldDatabase(6, schemaStatements(6)) { seedTasksAndHabits() }
+        val db = upgrade()
+        assertTrue(db.goalDao().goals().isEmpty())
+
+        val goal = db.goalDao().insert(GoalEntity(title = "Read more"))
+        db.goalDao().insertMilestone(GoalMilestoneEntity(goalId = goal, title = "Finish the first book"))
+        db.goalDao().linkTask(GoalTaskEntity(taskId = 1, goalId = goal))
+        db.goalDao().linkHabit(GoalHabitEntity(habitId = 1, goalId = goal))
+        assertEquals(1L, db.goalDao().taskLinks().single().taskId)
+        assertEquals(1L, db.goalDao().habitLinks().single().habitId)
+        assertTasksAndHabitsKept(db)
     }
 
     // ---- Building old databases ----

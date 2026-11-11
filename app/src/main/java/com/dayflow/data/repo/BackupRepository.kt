@@ -28,6 +28,10 @@ class BackupRepository(private val db: DayFlowDatabase, private val photos: Phot
             focusSessions = db.focusDao().all(),
             reflections = db.reflectionDao().all(),
             prayerLogs = db.prayerDao().all(),
+            goals = db.goalDao().goals(),
+            goalMilestones = db.goalDao().milestones(),
+            goalTasks = db.goalDao().taskLinks(),
+            goalHabits = db.goalDao().habitLinks(),
             periodDays = if (includeCycle) db.cycleDao().periodDays() else null,
             cycleSymptoms = if (includeCycle) db.cycleDao().symptoms() else null,
         )
