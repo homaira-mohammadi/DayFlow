@@ -140,6 +140,21 @@ class MigrationTest {
         assertEquals(7 * 60, db.sleepDao().latest()?.wakeMinutes)
     }
 
+    @Test fun `a version 7 test build that had sleep but no goals upgrades and keeps its sleep records`() = runBlocking {
+        val sleepTable = "CREATE TABLE IF NOT EXISTS `sleep_logs` (`date` INTEGER NOT NULL, `bedMinutes` INTEGER NOT NULL, " +
+            "`wakeMinutes` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, PRIMARY KEY(`date`))"
+        val sleepOnlyVersion7 = schemaStatements(6, onlyTables = allTables(6)) + sleepTable
+        createOldDatabase(7, sleepOnlyVersion7) {
+            seedTasksAndHabits()
+            execSQL("INSERT INTO sleep_logs (date, bedMinutes, wakeMinutes, updatedAt) VALUES (19701, 1380, 420, 3)")
+        }
+        val db = upgrade()
+        assertTasksAndHabitsKept(db)
+        assertEquals(420, db.sleepDao().all().single().wakeMinutes)
+        assertTrue(db.goalDao().goals().isEmpty())
+        db.goalDao().linkTask(GoalTaskEntity(taskId = 1, goalId = db.goalDao().insert(GoalEntity(title = "Read more"))))
+    }
+
     // ---- Building old databases ----
 
     private fun createOldDatabase(version: Int, statements: List<String>, seed: SQLiteDatabase.() -> Unit = {}) {
@@ -168,6 +183,11 @@ class MigrationTest {
 
     private fun savedVersions(): List<Int> =
         File(SCHEMAS).listFiles().orEmpty().mapNotNull { it.nameWithoutExtension.toIntOrNull() }.sorted()
+
+    private fun allTables(version: Int): Set<String> {
+        val entities = JSONObject(schemaFile(version).readText()).getJSONObject("database").getJSONArray("entities")
+        return (0 until entities.length()).map { entities.getJSONObject(it).getString("tableName") }.toSet()
+    }
 
     /** The statements that create a saved version's tables, optionally only some of them. */
     private fun schemaStatements(version: Int, onlyTables: Set<String>? = null): List<String> {
