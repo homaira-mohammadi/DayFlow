@@ -37,7 +37,7 @@ abstract class DayFlowDatabase : RoomDatabase() {
     companion object {
         fun build(context: Context): DayFlowDatabase =
             Room.databaseBuilder(context, DayFlowDatabase::class.java, "dayflow.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                .addMigrations(*MIGRATIONS)
                 .build()
 
         /** Version 2 adds morning reflections; existing tasks and habits are kept. */
@@ -91,5 +91,8 @@ abstract class DayFlowDatabase : RoomDatabase() {
                 )
             }
         }
+
+        /** Every upgrade step, oldest first. The migration tests run all of them. */
+        val MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
     }
 }
