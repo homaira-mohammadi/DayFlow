@@ -20,8 +20,13 @@ import androidx.sqlite.db.SupportSQLiteDatabase
         PeriodDayEntity::class,
         CycleSymptomEntity::class,
         PrayerLogEntity::class,
+        GoalEntity::class,
+        GoalMilestoneEntity::class,
+        GoalTaskEntity::class,
+        GoalHabitEntity::class,
+        SleepLogEntity::class,
     ],
-    version = 6,
+    version = 8,
     exportSchema = true,
 )
 abstract class DayFlowDatabase : RoomDatabase() {
@@ -32,11 +37,14 @@ abstract class DayFlowDatabase : RoomDatabase() {
     abstract fun focusDao(): FocusDao
     abstract fun cycleDao(): CycleDao
     abstract fun prayerDao(): PrayerDao
+    abstract fun goalDao(): GoalDao
+    abstract fun sleepDao(): SleepDao
+    abstract fun backupDao(): BackupDao
 
     companion object {
         fun build(context: Context): DayFlowDatabase =
             Room.databaseBuilder(context, DayFlowDatabase::class.java, "dayflow.db")
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+                .addMigrations(*MIGRATIONS)
                 .build()
 
         /** Version 2 adds morning reflections; existing tasks and habits are kept. */
@@ -90,5 +98,56 @@ abstract class DayFlowDatabase : RoomDatabase() {
                 )
             }
         }
+
+        /** Version 7 adds goals. Tasks and habits are linked through new tables, so nothing existing is changed. */
+        private val MIGRATION_6_7 = object : Migration(6, 7) {
+            override fun migrate(db: SupportSQLiteDatabase) = createGoalTables(db)
+        }
+
+        private fun createGoalTables(db: SupportSQLiteDatabase) {
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `goals` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `title` TEXT NOT NULL, " +
+                    "`description` TEXT NOT NULL, `targetDate` INTEGER, `status` TEXT NOT NULL, `createdAt` INTEGER NOT NULL)",
+            )
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `goal_milestones` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                    "`goalId` INTEGER NOT NULL, `title` TEXT NOT NULL, `done` INTEGER NOT NULL, `sortOrder` INTEGER NOT NULL, " +
+                    "FOREIGN KEY(`goalId`) REFERENCES `goals`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+            )
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_goal_milestones_goalId` ON `goal_milestones` (`goalId`)")
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `goal_tasks` (`taskId` INTEGER NOT NULL, `goalId` INTEGER NOT NULL, PRIMARY KEY(`taskId`), " +
+                    "FOREIGN KEY(`taskId`) REFERENCES `tasks`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , " +
+                    "FOREIGN KEY(`goalId`) REFERENCES `goals`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+            )
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_goal_tasks_goalId` ON `goal_tasks` (`goalId`)")
+            db.execSQL(
+                "CREATE TABLE IF NOT EXISTS `goal_habits` (`habitId` INTEGER NOT NULL, `goalId` INTEGER NOT NULL, PRIMARY KEY(`habitId`), " +
+                    "FOREIGN KEY(`habitId`) REFERENCES `habits`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE , " +
+                    "FOREIGN KEY(`goalId`) REFERENCES `goals`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+            )
+            db.execSQL("CREATE INDEX IF NOT EXISTS `index_goal_habits_goalId` ON `goal_habits` (`goalId`)")
+        }
+
+        /**
+         * Version 8 adds the sleep tracker; nothing existing is changed. A test build made before
+         * goals existed used version 7 for sleep alone, so this also creates the goal tables when
+         * they are missing. Every statement is "if not exists", so both kinds of version 7 end up the same.
+         */
+        private val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                createGoalTables(db)
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS `sleep_logs` (`date` INTEGER NOT NULL, `bedMinutes` INTEGER NOT NULL, " +
+                        "`wakeMinutes` INTEGER NOT NULL, `updatedAt` INTEGER NOT NULL, PRIMARY KEY(`date`))",
+                )
+            }
+        }
+
+        /** Every upgrade step, oldest first. The migration tests run all of them. */
+        val MIGRATIONS: Array<Migration> = arrayOf(
+            MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7,
+            MIGRATION_7_8,
+        )
     }
 }

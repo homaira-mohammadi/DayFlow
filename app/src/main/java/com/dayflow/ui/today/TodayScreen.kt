@@ -81,11 +81,13 @@ fun TodayScreen(
     onOpenFocus: () -> Unit,
     onOpenCycle: () -> Unit,
     onOpenPrayerHistory: () -> Unit,
+    onOpenSleepHistory: () -> Unit,
     hidePrivate: Boolean = false,
     vm: TodayViewModel = viewModel(factory = TodayViewModel.Factory),
 ) {
     val state by vm.state.collectAsStateWithLifecycle()
     val prayers by vm.prayers.collectAsStateWithLifecycle()
+    val sleep by vm.sleep.collectAsStateWithLifecycle()
     LifecycleResumeEffect(Unit) {
         vm.refreshDate()
         onPauseOrDispose { }
@@ -129,6 +131,9 @@ fun TodayScreen(
                 )
             }
             item(key = "progress") { ProgressCard(plan.stats, plan.isRestDay) }
+            sleep?.let { sl ->
+                item(key = "sleep") { SleepCard(sl, onSave = vm::saveSleep, onDelete = vm::deleteSleep, onOpenHistory = onOpenSleepHistory) }
+            }
             prayers?.let { p ->
                 item(key = "prayers") { PrayerCard(p, onPreviousDay = vm::prayerPreviousDay, onNextDay = vm::prayerNextDay, onSet = vm::setPrayer, onOpenHistory = onOpenPrayerHistory) }
             }

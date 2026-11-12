@@ -11,6 +11,7 @@ object Fmt {
     private val header = DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.getDefault())
     private val short = DateTimeFormatter.ofPattern("EEE, MMM d", Locale.getDefault())
     private val month = DateTimeFormatter.ofPattern("MMMM yyyy", Locale.getDefault())
+    private val full = DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.getDefault())
 
     fun time(minutes: Int, use24h: Boolean): String =
         LocalTime.of(minutes / 60, minutes % 60)
@@ -21,6 +22,9 @@ object Fmt {
     fun shortDate(date: LocalDate): String = date.format(short)
 
     fun month(date: LocalDate): String = date.format(month)
+
+    /** With the year, for dates that may be months away. */
+    fun fullDate(date: LocalDate): String = date.format(full)
 
     fun relative(date: LocalDate, today: LocalDate = LocalDate.now()): String = when (date) {
         today -> "Today"

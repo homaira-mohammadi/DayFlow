@@ -39,6 +39,9 @@ data class HabitForm(
 class HabitEditorViewModel(private val c: AppContainer, handle: SavedStateHandle) : ViewModel() {
     private val habitId: Long = handle.get<Long>("id") ?: -1L
     val isNew = habitId <= 0
+    /** Set when the editor was opened from a goal: the new habit is linked to it. */
+    private val goalId: Long = handle.get<Long>("goal") ?: -1L
+    val linksToGoal = isNew && goalId > 0
     private var original: HabitEntity? = null
 
     var form by mutableStateOf(HabitForm())
@@ -90,7 +93,8 @@ class HabitEditorViewModel(private val c: AppContainer, handle: SavedStateHandle
             daysMask = f.daysMask, target = target!!, minimumTarget = minimum, reminderMinutes = f.reminderMinutes,
         )
         viewModelScope.launch {
-            c.habits.save(entity)
+            val id = c.habits.save(entity)
+            if (linksToGoal) c.goals.linkHabit(goalId, id)
             onSaved()
         }
     }

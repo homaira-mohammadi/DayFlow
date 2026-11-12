@@ -5,11 +5,13 @@ import com.dayflow.data.db.DayFlowDatabase
 import com.dayflow.data.prefs.SettingsRepository
 import com.dayflow.data.repo.BackupRepository
 import com.dayflow.data.repo.CycleRepository
+import com.dayflow.data.repo.GoalRepository
 import com.dayflow.data.repo.HabitRepository
 import com.dayflow.data.repo.PhotoStore
 import com.dayflow.data.repo.PlanRepository
 import com.dayflow.data.repo.PrayerRepository
 import com.dayflow.data.repo.ReflectionRepository
+import com.dayflow.data.repo.SleepRepository
 import com.dayflow.data.repo.TaskRepository
 import com.dayflow.focus.FocusController
 import com.dayflow.security.AppLock
@@ -28,6 +30,8 @@ class AppContainer(context: Context) {
     val reflections = ReflectionRepository(db, photos)
     val cycle = CycleRepository(db)
     val prayers = PrayerRepository(db)
+    val goals = GoalRepository(db)
+    val sleep = SleepRepository(db)
     val appLock = AppLock()
     val focus = FocusController(context, db, habits, reminders)
 }

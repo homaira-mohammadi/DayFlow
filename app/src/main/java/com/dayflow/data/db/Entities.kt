@@ -8,6 +8,7 @@ import androidx.room.PrimaryKey
 import androidx.room.Relation
 import com.dayflow.domain.DaySection
 import com.dayflow.domain.Days
+import com.dayflow.domain.GoalStatus
 import com.dayflow.domain.HabitGoalType
 import com.dayflow.domain.HabitStatus
 import com.dayflow.domain.Mood
@@ -168,6 +169,72 @@ data class PrayerLogEntity(
     val date: Long,
     val prayer: Prayer,
     val status: PrayerStatus,
+    val updatedAt: Long = System.currentTimeMillis(),
+)
+
+/** Something the person is working toward over weeks or months. Milestones, tasks and habits attach to it. */
+@Entity(tableName = "goals")
+data class GoalEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val title: String,
+    val description: String = "",
+    /** Optional date to aim for, as an epoch day. */
+    val targetDate: Long? = null,
+    val status: GoalStatus = GoalStatus.ACTIVE,
+    val createdAt: Long = System.currentTimeMillis(),
+)
+
+/** A step on the way to a goal that isn't tied to a day, e.g. "Finish the Python course". */
+@Entity(
+    tableName = "goal_milestones",
+    foreignKeys = [ForeignKey(entity = GoalEntity::class, parentColumns = ["id"], childColumns = ["goalId"], onDelete = ForeignKey.CASCADE)],
+    indices = [Index("goalId")],
+)
+data class GoalMilestoneEntity(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val goalId: Long,
+    val title: String,
+    val done: Boolean = false,
+    val sortOrder: Int = 0,
+)
+
+/**
+ * Connects a task to the goal it serves. A task belongs to at most one goal. The link lives in
+ * its own table, so tasks themselves are unchanged and deleting either side just removes the link.
+ */
+@Entity(
+    tableName = "goal_tasks",
+    foreignKeys = [
+        ForeignKey(entity = TaskEntity::class, parentColumns = ["id"], childColumns = ["taskId"], onDelete = ForeignKey.CASCADE),
+        ForeignKey(entity = GoalEntity::class, parentColumns = ["id"], childColumns = ["goalId"], onDelete = ForeignKey.CASCADE),
+    ],
+    indices = [Index("goalId")],
+)
+data class GoalTaskEntity(
+    @PrimaryKey val taskId: Long,
+    val goalId: Long,
+)
+
+/** Connects a habit to the goal it serves, in the same way as [GoalTaskEntity]. */
+@Entity(
+    tableName = "goal_habits",
+    foreignKeys = [
+        ForeignKey(entity = HabitEntity::class, parentColumns = ["id"], childColumns = ["habitId"], onDelete = ForeignKey.CASCADE),
+        ForeignKey(entity = GoalEntity::class, parentColumns = ["id"], childColumns = ["goalId"], onDelete = ForeignKey.CASCADE),
+    ],
+    indices = [Index("goalId")],
+)
+data class GoalHabitEntity(
+    @PrimaryKey val habitId: Long,
+    val goalId: Long,
+)
+
+/** One night of sleep, filed under the morning of waking up. Times are minutes after midnight. */
+@Entity(tableName = "sleep_logs")
+data class SleepLogEntity(
+    @PrimaryKey val date: Long,
+    val bedMinutes: Int,
+    val wakeMinutes: Int,
     val updatedAt: Long = System.currentTimeMillis(),
 )
 

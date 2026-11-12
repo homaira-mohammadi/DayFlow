@@ -22,6 +22,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Bedtime
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Insights
@@ -86,6 +87,15 @@ private fun pages(prayers: Boolean, cycle: Boolean): List<TourPage> = listOfNotN
             if (cycle) "On logged period days, prayers are marked as excused" else null,
         ),
     ) else null,
+    TourPage(
+        Icons.Filled.Bedtime, "Today tab · Sleep", "Track your sleep",
+        "Each morning, add when you went to bed and when you woke up.",
+        listOf(
+            "The bar shows how close you came to your sleep goal",
+            "Tap History for charts of your sleep hours and wake-up times",
+            "Change your goal in Settings → Sleep",
+        ),
+    ),
     TourPage(
         Icons.Filled.Loop, "Habits tab", "Build habits that last",
         "Create habits for any days of the week, with a goal and an optional busy-day minimum.",

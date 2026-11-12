@@ -30,6 +30,9 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+    testOptions {
+        unitTests.isIncludeAndroidResources = true
+    }
     buildFeatures {
         compose = true
     }
@@ -64,4 +67,9 @@ dependencies {
     implementation(libs.androidx.fragment.ktx)
 
     testImplementation(libs.junit)
+    // The JSON classes built into Android are empty stubs in plain unit tests.
+    testImplementation(libs.json)
+    // Runs the database tests on the computer, without a phone or emulator.
+    testImplementation(libs.robolectric)
+    testImplementation(libs.androidx.test.core)
 }

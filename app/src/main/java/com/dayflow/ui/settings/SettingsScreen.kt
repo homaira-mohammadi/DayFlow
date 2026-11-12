@@ -41,6 +41,7 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.DeleteForever
 import androidx.compose.material.icons.filled.FileDownload
+import androidx.compose.material.icons.filled.FileUpload
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Lock
@@ -110,7 +111,7 @@ import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
 
-private enum class SettingsDialog { NAME, ACCENT, WEEK_START, MORNING, EVENING, ABOUT, HELP, DELETE, GENDER, CYCLE_LENGTH, PERIOD_LENGTH, PMS_DAYS, EXPORT, DELETE_CYCLE, APP_LOCK }
+private enum class SettingsDialog { NAME, ACCENT, WEEK_START, MORNING, EVENING, ABOUT, HELP, DELETE, GENDER, CYCLE_LENGTH, PERIOD_LENGTH, PMS_DAYS, EXPORT, RESTORE, DELETE_CYCLE, APP_LOCK, SLEEP_GOAL }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -137,6 +138,9 @@ fun SettingsScreen(
     var exportCycle by remember { mutableStateOf(false) }
     val exportLauncher = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         if (uri != null) vm.export(context.contentResolver, uri, exportCycle)
+    }
+    val restoreLauncher = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) vm.restore(context.contentResolver, uri)
     }
     val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         vm.update { it.copy(notifications = granted) }
@@ -209,6 +213,17 @@ fun SettingsScreen(
                 SettingsRow(Icons.Filled.Mosque, "Prayer tracking", subtitle = "Shows Fajr, Dhuhr, Asr, Maghrib and Isha on Today, to mark as on time, late or missed", trailing = {
                     Switch(checked = s.prayerTracking, onCheckedChange = { v -> vm.update { it.copy(prayerTracking = v) } })
                 })
+            }
+
+            SettingsGroup("Sleep") {
+                SettingsRow(Icons.Filled.Bedtime, "Sleep tracker", subtitle = "Log bedtime and wake-up on Today, and see your sleep on charts", trailing = {
+                    Switch(checked = s.sleepTracking, onCheckedChange = { v -> vm.update { it.copy(sleepTracking = v) } })
+                })
+                if (s.sleepTracking) {
+                    RowDivider()
+                    SettingsRow(Icons.Filled.Bedtime, "Sleep goal", subtitle = "Hours of sleep you aim for each night",
+                        value = "${s.sleepGoalMinutes / 60} h", onClick = { dialog = SettingsDialog.SLEEP_GOAL })
+                }
             }
 
             SettingsGroup("Period tracking") {
@@ -290,6 +305,9 @@ fun SettingsScreen(
                 SettingsRow(Icons.Filled.FileDownload, "Export data", subtitle = "Save a JSON backup of everything",
                     onClick = { dialog = SettingsDialog.EXPORT })
                 RowDivider()
+                SettingsRow(Icons.Filled.FileUpload, "Restore from backup", subtitle = "Bring back an exported JSON file",
+                    onClick = { dialog = SettingsDialog.RESTORE })
+                RowDivider()
                 SettingsRow(Icons.Filled.DeleteForever, "Delete all data", danger = true, onClick = { dialog = SettingsDialog.DELETE })
             }
 
@@ -362,7 +380,7 @@ fun SettingsScreen(
             title = { Text("Export data") },
             text = {
                 Column {
-                    Text("Saves your tasks, habits, reflections and focus sessions as a JSON file.")
+                    Text("Saves your tasks, habits, goals, sleep, reflections and focus sessions as a JSON file. On a new phone, use Restore from backup to bring them back. Photos aren't included.")
                     if (s.cycleTracking || exportCycle) {
                         Row(
                             Modifier.fillMaxWidth().padding(top = 12.dp).clickable { exportCycle = !exportCycle },
@@ -382,6 +400,15 @@ fun SettingsScreen(
             },
             dismissButton = { TextButton(onClick = { dialog = null }) { Text("Cancel") } },
         )
+        SettingsDialog.RESTORE -> ConfirmDialog(
+            title = "Restore from a backup?",
+            body = "This replaces the tasks, habits, goals, reflections and records on this phone with the ones in the backup file. " +
+                "Settings are kept, and period data is only replaced if the backup includes it. Photos aren't part of a backup file.",
+            confirm = "Choose file",
+            onDismiss = { dialog = null },
+            // Some file apps don't label .json files as JSON, so the other common labels are allowed too.
+            onConfirm = { restoreLauncher.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) },
+        )
         SettingsDialog.DELETE_CYCLE -> ConfirmDialog(
             title = "Delete period data?",
             body = "This permanently removes all period days and symptom logs. Your tasks, habits and other records are not affected.",
@@ -394,6 +421,9 @@ fun SettingsScreen(
         }
         SettingsDialog.PERIOD_LENGTH -> NumberDialog("Typical period length", s.periodLength, 1..10, "days", { dialog = null }) { n ->
             vm.update { it.copy(periodLength = n) }
+        }
+        SettingsDialog.SLEEP_GOAL -> NumberDialog("Sleep goal", s.sleepGoalMinutes / 60, 5..12, "hours", { dialog = null }) { n ->
+            vm.update { it.copy(sleepGoalMinutes = n * 60) }
         }
         SettingsDialog.PMS_DAYS -> NumberDialog("PMS days", s.pmsDays, 1..10, "days before a period", { dialog = null }) { n ->
             vm.update { it.copy(pmsDays = n) }
@@ -429,6 +459,7 @@ fun SettingsScreen(
 }
 
 private val faq = listOf(
+    "What are goals?" to "A goal is what you're working toward over weeks or months. Open the Progress tab and choose Set a goal, then add milestones and link the tasks and habits that move it forward. Progress is the share of milestones and linked tasks that are done; cancelled tasks aren't counted. Habits are ongoing, so they show their streak beside the goal instead.",
     "How do I complete a habit?" to "Tap the circle on the right of a habit. For amount or duration habits, tap the habit itself to enter how much you did.",
     "What is a minimum version?" to "A smaller target for busy days, like 5 minutes of reading instead of 20. It keeps your streak going, and the app still records that it was the minimum.",
     "What happens to unfinished tasks?" to "They appear under \"Unfinished from earlier\" on Today. Use the ⋮ menu to move each one to today, tomorrow, next week or any date. Nothing is moved automatically.",
