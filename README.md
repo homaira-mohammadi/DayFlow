@@ -134,10 +134,10 @@ New users get a short welcome flow with one question per screen, then a guided t
 
 ## 📥 Download & Install APK
 
-You can download and install the official pre-built app directly from GitHub Releases:
+You can download and install the pre-built app directly in 1 click:
 
-- 🚀 [📥 **Download Latest Release (GitHub Releases)**](https://github.com/homaira-mohammadi/DayFlow/releases/latest)
-- 📦 [**View All Releases & Download Assets**](https://github.com/homaira-mohammadi/DayFlow/releases)
+- 🚀 [📥 **Download Dayflow-1.2.0.apk (Direct 1-Click Download)**](https://github.com/homaira-mohammadi/DayFlow/raw/main/apk/Dayflow-1.2.0.apk)
+- 📦 [**View All Releases on GitHub**](https://github.com/homaira-mohammadi/DayFlow/releases)
 
 ### 🏷️ How Releases Work
 
